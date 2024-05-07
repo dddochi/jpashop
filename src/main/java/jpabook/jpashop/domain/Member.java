@@ -23,4 +23,5 @@ public class Member {
     //order table에 있는 member필드에 의해 나는 매핑된거야!
     //여기 값을 변경한다고 해서 foreign key 값이 변경되지 x
     private List<Order> orders = new ArrayList<>();
+
 }
