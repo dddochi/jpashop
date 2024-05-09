@@ -1,6 +1,7 @@
 package jpabook.jpashop.domain;
 
 import jakarta.persistence.*;
+import jpabook.jpashop.domain.item.Item;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -47,5 +48,44 @@ public class Order {
     public void setDelivery(Delivery delivery){
         this.delivery = delivery;
         delivery.setOrder(this);
+    }
+
+    //==생성 메서드==//
+    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems){
+        Order order = new Order();
+        order.setMember(member);
+        order.setDelivery(delivery);
+        for(OrderItem orderItem :orderItems){
+            order.addOrderItem(orderItem);
+        }
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        return order;
+    }
+
+    //==비지니스 로직==//
+    /**
+     * 주문 취소
+     */
+    public void cancel(){
+        if(delivery.getStatus()==DeliveryStatus.COMP){ //배송이 끝나면 - 취소 불가
+            throw new IllegalStateException("이미 배송이 완료된 상품은 취소가 불가능합니다.");
+        }
+
+        this.setStatus(OrderStatus.CANCEL);
+        //재고 원복
+        for(OrderItem orderItem : this.orderItems){ //this.orderItems -> this 생략 : because IDE가 보라색으로 색칠 - 강조, 중복 될 떄 말고는 사용x
+            orderItem.cancel();
+        }
+    }
+
+    //==조회 로직==//
+    /**
+     * 전체 주문 가격 조회
+     */
+    public int getTotalPrice(){
+        int totalPrice = 0;
+        for(OrderItem orderItem : orderItems) totalPrice += orderItem.getTotalPrice();
+        return totalPrice;
     }
 }
